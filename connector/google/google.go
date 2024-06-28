@@ -541,7 +541,12 @@ func (c *googleConnector) ExtendPayload(scopes []string, claims storage.Claims, 
 	type Response struct {
 		Data    Data   `json:"data"`
 		Success bool   `json:"success"`
-		Error   string `json:"error"`
+		Error   struct {
+			Code   int `json:"code"`
+			Errors []struct {
+				Code int `json:"code"`
+			} `json:"errors"`
+		} `json:"error"`
 	}
 
 	var response Response
@@ -551,7 +556,7 @@ func (c *googleConnector) ExtendPayload(scopes []string, claims storage.Claims, 
 	}
 
 	if !response.Success {
-		return payload, fmt.Errorf("error: %s", response.Error)
+		return payload, fmt.Errorf("error: %d", response.Error.Code)
 	}
 
 	// Now, search the email in the list of users.
