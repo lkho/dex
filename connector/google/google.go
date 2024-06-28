@@ -448,6 +448,12 @@ func (c *googleConnector) ExtendPayload(scopes []string, claims storage.Claims, 
 		return payload, errors.New("SYNO_USER not set")
 	}
 
+	synoUrl := os.Getenv("SYNO_URL")
+	if synoUrl == "" {
+		return payload, errors.New("SYNO_URL not set")
+	}
+	synoApi := fmt.Sprintf("%s/webapi/entry.cgi", synoUrl)
+
 	// URL-encode the password.
 	form := url.Values{}
 	form.Add("api", "SYNO.API.Auth")
@@ -455,7 +461,7 @@ func (c *googleConnector) ExtendPayload(scopes []string, claims storage.Claims, 
 	form.Add("version", "6")
 	form.Add("account", user)
 	form.Add("passwd", passwd)
-	req, err := http.NewRequest("POST", "https://famille.vls.dev/webapi/entry.cgi", strings.NewReader(form.Encode()))
+	req, err := http.NewRequest("POST", synoApi, strings.NewReader(form.Encode()))
 	if err != nil {
 		return payload, fmt.Errorf("failed to create request: %w", err)
 	}
@@ -480,7 +486,7 @@ func (c *googleConnector) ExtendPayload(scopes []string, claims storage.Claims, 
 	form.Add("offset", "0")
 	form.Add("limit", "-1")
 	form.Add("additional", `["email","description","expired","2fa_status"]`)
-	req, err = http.NewRequest("POST", "https://famille.vls.dev/webapi/entry.cgi", strings.NewReader(form.Encode()))
+	req, err = http.NewRequest("POST", synoApi, strings.NewReader(form.Encode()))
 	if err != nil {
 		return payload, fmt.Errorf("failed to create request: %w", err)
 	}
